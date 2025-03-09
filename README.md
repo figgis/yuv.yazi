@@ -2,6 +2,8 @@
 
 Yazi plugin for viewing YUV-files
 
+Works by extracting dimensions from filename, like "FourPeople_1280x720_30.yuv" or looking for specif strings like "1080p" in the name.
+
 ## Install the plugin:
 
 ```sh
