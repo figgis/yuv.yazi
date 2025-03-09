@@ -9,7 +9,7 @@ function M:extract_dimensions(filename)
     else
         -- If the first pattern doesn't match, look for resolution terms
         local resolution_patterns = {
-        	  ["2160p"] = "3840x2160",
+            ["2160p"] = "3840x2160",
             ["1080p"] = "1920x1080",
             ["720p"] = "1280x720",
             ["576p"] = "1024x540",
