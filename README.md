@@ -14,7 +14,7 @@ Create `~/.config/yazi/yazi.toml` and add:
 
 ```toml
 [plugin]
-  previewers = [
+  prepend_previewers = [
     { name = "*.yuv", run = "yuv" },
   ]
   prepend_preloaders = [
