@@ -1,5 +1,10 @@
 local M = {}
 
+function M:is_y4m(filename)
+    -- Check if the file has a .y4m extension
+    return filename:match("%.y4m$") ~= nil
+end
+
 function M:extract_dimensions(filename)
     -- Try to match the pattern "WIDTHxHEIGHT"
     local width, height = filename:match("(%d+)x(%d+)")
@@ -9,7 +14,7 @@ function M:extract_dimensions(filename)
     else
         -- If the first pattern doesn't match, look for resolution terms
         local resolution_patterns = {
-            ["2160p"] = "3840x2160",
+        	  ["2160p"] = "3840x2160",
             ["1080p"] = "1920x1080",
             ["720p"] = "1280x720",
             ["576p"] = "1024x540",
@@ -74,23 +79,43 @@ function M:preload(job)
 		return true
 	end
 
-	local dim = M:extract_dimensions(tostring(job.file.url))
-	if not dim then
-	  return true, Err("Failed to get video dimensions!" .. tostring(job.file.url))
+	local file_url = tostring(job.file.url)
+	local is_y4m = M:is_y4m(file_url)
+
+	-- Build ffmpeg arguments
+	local ffmpeg_args = {
+		"-v", "quiet", "-threads", 1,
+	}
+
+	-- For YUV files, we need to specify dimensions manually
+	-- For Y4M files, ffmpeg can read dimensions from the header
+	if not is_y4m then
+		local dim = M:extract_dimensions(file_url)
+		if not dim then
+			return true, Err("Failed to get video dimensions from filename: " .. file_url)
+		end
+		-- Add size argument for raw YUV files
+		table.insert(ffmpeg_args, "-s")
+		table.insert(ffmpeg_args, dim)
 	end
 
+	-- Common arguments for both file types
+	table.insert(ffmpeg_args, "-i")
+	table.insert(ffmpeg_args, file_url)
+	table.insert(ffmpeg_args, "-vframes")
+	table.insert(ffmpeg_args, 1)
+
 	local qv = 31 - math.floor(rt.preview.image_quality * 0.3)
-	-- stylua: ignore
-	local status, err = Command("ffmpeg"):args({
-		"-v", "quiet", "-threads", 1, 
-		"-s", dim,
-		"-i", tostring(job.file.url),
-		"-vframes", 1,
-		"-q:v", qv,
-		"-vf", string.format("scale=-1:'min(%d,ih)':flags=fast_bilinear", rt.preview.max_height),
-		"-f", "image2",
-		"-y", tostring(cache),
-	}):status()
+	table.insert(ffmpeg_args, "-q:v")
+	table.insert(ffmpeg_args, qv)
+	table.insert(ffmpeg_args, "-vf")
+	table.insert(ffmpeg_args, string.format("scale=-1:'min(%d,ih)':flags=fast_bilinear", rt.preview.max_height))
+	table.insert(ffmpeg_args, "-f")
+	table.insert(ffmpeg_args, "image2")
+	table.insert(ffmpeg_args, "-y")
+	table.insert(ffmpeg_args, tostring(cache))
+
+	local status, err = Command("ffmpeg"):arg(ffmpeg_args):status()
 
 	if status then
 		return status.success
