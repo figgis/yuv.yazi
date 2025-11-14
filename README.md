@@ -1,8 +1,9 @@
 # yuv.yazi
 
-Yazi plugin for viewing YUV-files
+Yazi plugin for viewing YUV-files and y4m files. Defaults to 4:2:0 subsampling for you.
 
 Works by extracting dimensions from filename, like "FourPeople_1280x720_30.yuv" or looking for specif strings like "1080p" in the name.
+y4m handles this autimatically bot hfor dimensions and format/subsampling. 
 
 ## Install the plugin:
 
