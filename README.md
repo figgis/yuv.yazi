@@ -7,7 +7,7 @@ Works by extracting dimensions from filename, like "FourPeople_1280x720_30.yuv" 
 ## Install the plugin:
 
 ```sh
-ya pack -a figgis/yuv
+ya pkg add figgis/yuv
 ```
 
 Create `~/.config/yazi/yazi.toml` and add:
